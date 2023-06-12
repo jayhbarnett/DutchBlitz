@@ -1,7 +1,6 @@
 import random
 import pygame
-#hello
-#test
+
 
 
 class Card:
@@ -14,11 +13,15 @@ class Card:
 
 class Player:
     def __init__(self):
-        self.hand = createCards()
-        self.blitz = createBlitz(self.hand)
-        self.front3 = createFront3(self.hand)
+        self.hand = self.createCards()
+        self.blitz = self.createBlitz()
+        self.front3 = self.createFront3()
         self.flipped = []  
         self.score = 0
+        self.piles = []
+        for i in range(16):
+            self.piles.append([])
+            i+=1
 
     def getHand(self):
         return self.hand
@@ -31,28 +34,9 @@ class Player:
     
     def getFlipped(self):
         return self.flipped
-
-    def printCards(self):
-        hand = self.getHand()
-        blitz = self.getBlitz()
-        front3 = self.getFront3()
-        print("hand")
-        print(len(hand))
-
-        for card in hand:
-            print(card.to_list())
-
-        print("blitz")
-        print(len(blitz))
-
-        for card in blitz:
-            print(card.to_list())
-
-        print("front 3")
-        print(len(front3))
-
-        for card in front3:
-            print(card.to_list())
+    
+    def getPiles(self):
+        return self.piles
 
     def flip(self):
         if len(self.hand) >= 3:
@@ -64,9 +48,6 @@ class Player:
         print(len(self.hand))
 
 
-        for card in self.flipped:
-            print(card.to_list())
-
     def mergeDecks(self):
         self.hand = self.flipped[::-1]
         self.flipped = []
@@ -75,17 +56,6 @@ class Player:
     def useFront3(self,pos):
         used = self.front3[pos]
         self.front3[pos] = self.blitz.pop()
-        print("blitz")
-        print(len(self.blitz))
-
-        for card in self.blitz:
-            print(card.to_list())
-
-        print("front 3")
-        print(len(self.front3))
-
-        for card in self.front3:
-            print(card.to_list())
         
         return used
         
@@ -96,50 +66,60 @@ class Player:
     
     def addToPile(self):
         return self.flipped.pop()
-
-
-        
-        
-def createCards():
-    colours =["red", "yellow", "green", "blue"]
-    hand =[]
-    for colour in colours:
-        for i in range(1,11):
-            card = Card(colour, i)
-            hand.append(card)
     
-    random.shuffle(hand)
-    return hand
+    def playCard(self,pileIndex,index,fromFlipped):
+        pileLen = 0
+        if len(self.piles[pileIndex])>0:
+            pileLen = len(self.piles[pileIndex])-1
+        # if fromFlipped:
+        if cardToPlace.value == 1:
+            if len(self.piles[pileIndex]) == 0:
+                if fromFlipped:
+                    self.piles[pileIndex].append(self.addToPile())
+                else:
+                    self.piles[pileIndex].append(self.useFront3(index))
+                print("lol")
+        else:
+            
+            print(pileLen)
+            
+            if(self.piles[pileIndex][pileLen].colour == cardToPlace.colour and self.piles[pileIndex][pileLen].value == cardToPlace.value-1):
+                if fromFlipped:
+                    self.piles[pileIndex].append(self.addToPile())
+                else:
+                    self.piles[pileIndex].append(self.useFront3(index))
+                print("hi")
 
 
-def createBlitz(hand):
-    blitz = hand[:10]
-    del hand[:10]
-    return blitz
+        
+        
+    def createCards(self):
+        colours =["red", "yellow", "green", "blue"]
+        hand =[]
+        for colour in colours:
+            for i in range(1,11):
+                card = Card(colour, i)
+                hand.append(card)
+        
+        random.shuffle(hand)
+        return hand
 
-def createFront3(hand):
-    front3 = hand[:3]
-    del hand[:3]
-    return front3
 
-jay = Player()
-jay.printCards()
-print("flipped")
-#jay.flip()
-print("flipped")
-#jay.flip()
-jay.useFront3(0)
-#jay.addToPile()
-print("flipped")
-#jay.flip()
-print(jay.addToScore())
-#jay.mergeDecks()
+    def createBlitz(self):
+        blitz = self.hand[:10]
+        del self.hand[:10]
+        return blitz
+
+    def createFront3(self):
+        front3 = self.hand[:3]
+        del self.hand[:3]
+        return front3
+
+player1 = Player()
+
 
 pygame.init()
-piles = []
-for i in range(16):
-    piles.append([])
-    i+=1
+
 
 screen_width = 750
 screen_height = 750
@@ -156,33 +136,6 @@ hand_rect_x = flipped_rect_x - rect_width- 20
 pile_rect_x = 20
 pile_rect_y = 10
 
-# Define the label text and font
-def playCard():
-    pileLen = 0
-    if len(piles[pileIndex])>0:
-        pileLen = len(piles[pileIndex])-1
-    if fromFlipped:
-        if cardToPlace.value == 1:
-            if len(piles[pileIndex]) == 0:
-                piles[pileIndex].append(jay.addToPile())
-                print("lol")
-        else:
-            
-            print(pileLen)
-            
-            if(piles[pileIndex][pileLen].colour == cardToPlace.colour and piles[pileIndex][pileLen].value == cardToPlace.value-1):
-                piles[pileIndex].append(jay.addToPile())
-                print("hi")
-    else:
-        if cardToPlace.value == 1:
-            if len(piles[pileIndex]) == 0:
-                piles[pileIndex].append(jay.useFront3(index))
-                print("loll")
-        else:
-           print(pileLen)
-           if(piles[pileIndex][pileLen].colour == cardToPlace.colour and piles[pileIndex][pileLen].value == cardToPlace.value-1):
-                piles[pileIndex].append(jay.useFront3(index))
-                print("hii")
 
 
 font_size = 50
@@ -201,216 +154,57 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             # Check if the click falls within the rectangle
             if hand_rect_x < event.pos[0] < hand_rect_x + rect_width and flipped_rect_y < event.pos[1] < flipped_rect_y + rect_height:
-                if len(jay.getHand()) > 0:
-                    jay.flip()
+                if len(player1.getHand()) > 0:
+                    player1.flip()
                 else:
-                    jay.mergeDecks()
+                    player1.mergeDecks()
+
+            #If a card from the flipped pile is chosen
             if flipped_rect_x < event.pos[0] < flipped_rect_x + rect_width and flipped_rect_y < event.pos[1] < flipped_rect_y + rect_height:
-                cardToPlace = jay.getFlipped()[len(jay.getFlipped())-1]
+                cardToPlace = player1.getFlipped()[len(player1.getFlipped())-1]
                 fromFlipped = True
                 print (cardToPlace.colour + " "+ str(cardToPlace.value))
-            if front3_rect_x < event.pos[0] < front3_rect_x + rect_width and flipped_rect_y < event.pos[1] < flipped_rect_y + rect_height:
-                cardToPlace = jay.getFront3()[0]
-                fromFlipped= False
-                index = 0
-                print (cardToPlace.colour + " "+ str(cardToPlace.value))
-            if front3_rect_x + 20 + rect_width < event.pos[0] < front3_rect_x + rect_width + 20 + rect_width and flipped_rect_y < event.pos[1] < flipped_rect_y + rect_height:
-                cardToPlace = jay.getFront3()[1]
-                index = 1
-                fromFlipped= False
-                print (cardToPlace.colour + " "+ str(cardToPlace.value))
-            if front3_rect_x + 20 + rect_width + 20 + rect_width < event.pos[0] < front3_rect_x + rect_width + 20 + rect_width + 20 + rect_width and flipped_rect_y < event.pos[1] < flipped_rect_y + rect_height:
-                cardToPlace = jay.getFront3()[2]
-                fromFlipped= False
-                index = 2
-                print (cardToPlace.colour + " "+ str(cardToPlace.value))
 
-            if pile_rect_x < event.pos[0] < pile_rect_x + rect_width and pile_rect_y < event.pos[1] < pile_rect_y + rect_height:
-                pileIndex = 0
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
-                
+            #If a card from front 3 is chosen
+            for i in range(3):
+                if front3_rect_x +i*(20+rect_width)< event.pos[0] < front3_rect_x + rect_width +i*(20+rect_width)and flipped_rect_y < event.pos[1] < flipped_rect_y + rect_height:
+                    cardToPlace = player1.getFront3()[i]
+                    fromFlipped= False
+                    index = i
+                    print (cardToPlace.colour + " "+ str(cardToPlace.value))
+           
 
-            if pile_rect_x + 20 + rect_width< event.pos[0] < pile_rect_x + rect_width+ 20 + rect_width and pile_rect_y < event.pos[1] < pile_rect_y + rect_height:
-                pileIndex = 1
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
-            if pile_rect_x + 2*(20 + rect_width)< event.pos[0] < pile_rect_x + rect_width+ 2*(20 + rect_width) and pile_rect_y < event.pos[1] < pile_rect_y + rect_height:
-                pileIndex = 2
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
-            if pile_rect_x + 3*(20 + rect_width)< event.pos[0] < pile_rect_x + rect_width+ 3*(20 + rect_width) and pile_rect_y < event.pos[1] < pile_rect_y + rect_height:
-                pileIndex = 3
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
-            if pile_rect_x + 4*(20 + rect_width)< event.pos[0] < pile_rect_x + rect_width+ 4*(20 + rect_width) and pile_rect_y < event.pos[1] < pile_rect_y + rect_height:
-                pileIndex = 4
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
-            if pile_rect_x + 5*(20 + rect_width)< event.pos[0] < pile_rect_x + rect_width+ 5*(20 + rect_width) and pile_rect_y < event.pos[1] < pile_rect_y + rect_height:
-                pileIndex = 5
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
+            #When a playing pile is chosen
+            for i in range(16):
+                x = i%6
+                if i > 11:
+                    x+=1
 
-            if pile_rect_x < event.pos[0] < pile_rect_x + rect_width and pile_rect_y +20 + rect_height < event.pos[1] < pile_rect_y + rect_height+20 + rect_height:
-                pileIndex = 6
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
+                if i<6:
+                    y = 0
+                elif i>6 and i<12:
+                    y = 1
+                else:
+                    y = 2
 
-            if pile_rect_x + 20 + rect_width< event.pos[0] < pile_rect_x + rect_width+ 20 + rect_width and pile_rect_y +20 + rect_height < event.pos[1] < pile_rect_y + rect_height + 20 + rect_height:
-                pileIndex = 7
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
-            if pile_rect_x + 2*(20 + rect_width)< event.pos[0] < pile_rect_x + rect_width+ 2*(20 + rect_width) and pile_rect_y +20 + rect_height< event.pos[1] < pile_rect_y + rect_height+20 + rect_height:
-                pileIndex = 8
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
-            if pile_rect_x + 3*(20 + rect_width)< event.pos[0] < pile_rect_x + rect_width+ 3*(20 + rect_width) and pile_rect_y +20 + rect_height< event.pos[1] < pile_rect_y + rect_height+20 + rect_height:
-                pileIndex = 9
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
-            if pile_rect_x + 4*(20 + rect_width)< event.pos[0] < pile_rect_x + rect_width+ 4*(20 + rect_width) and pile_rect_y +20 + rect_height< event.pos[1] < pile_rect_y + rect_height+20 + rect_height:
-                pileIndex = 10
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
-            if pile_rect_x + 5*(20 + rect_width)< event.pos[0] < pile_rect_x + rect_width+ 5*(20 + rect_width) and pile_rect_y +20 + rect_height< event.pos[1] < pile_rect_y + rect_height+20 + rect_height:
-                pileIndex = 11
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
+                if pile_rect_x + x*(20 + rect_width)< event.pos[0] < pile_rect_x + rect_width+ x*(20 + rect_width) and pile_rect_y +y*(20 + rect_height)< event.pos[1] < pile_rect_y + rect_height+y*(20 + rect_height):
+                    pileIndex = i
+                    print(pileIndex)
+                    if cardToPlace != None:
+                        if cardToPlace.value == 1:
+                            player1.playCard(pileIndex,index,fromFlipped)
+                        elif len(player1.getPiles()[pileIndex]) > 0:
+                            player1.playCard(pileIndex,index,fromFlipped)
+                    cardToPlace = None
+                    fromFlipped = None
+                    index = None    
 
-            if pile_rect_x + 20 + rect_width< event.pos[0] < pile_rect_x + rect_width+ 20 + rect_width and pile_rect_y +2*(20 + rect_height) < event.pos[1] < pile_rect_y + rect_height + 2*(20 + rect_height):
-                pileIndex = 12
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
-            if pile_rect_x + 2*(20 + rect_width)< event.pos[0] < pile_rect_x + rect_width+ 2*(20 + rect_width) and pile_rect_y +2*(20 + rect_height)< event.pos[1] < pile_rect_y + rect_height+2*(20 + rect_height):
-                pileIndex = 13
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
-            if pile_rect_x + 3*(20 + rect_width)< event.pos[0] < pile_rect_x + rect_width+ 3*(20 + rect_width) and pile_rect_y +2*(20 + rect_height)< event.pos[1] < pile_rect_y + rect_height+2*(20 + rect_height):
-                pileIndex = 14
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
-            if pile_rect_x + 4*(20 + rect_width)< event.pos[0] < pile_rect_x + rect_width+ 4*(20 + rect_width) and pile_rect_y +2*(20 + rect_height)< event.pos[1] < pile_rect_y + rect_height+2*(20 + rect_height):
-                pileIndex = 15
-                print(pileIndex)
-                if cardToPlace != None:
-                    if cardToPlace.value == 1:
-                        playCard()
-                    elif len(piles[pileIndex]) > 0:
-                        playCard()
-                cardToPlace = None
-                fromFlipped = None
-                index = None
+           
 
 
     screen.fill((255, 255, 255))
 
-    for card in jay.getBlitz():
+    for card in player1.getBlitz():
 
         pygame.draw.rect(screen, card.colour, (blitz_rect_x, blitz_rect_y, rect_width, rect_height))
 
@@ -421,8 +215,8 @@ while running:
         screen.blit(label, label_rect)
         blitz_rect_x += 1
 
-    if len(jay.getFlipped()) > 0:
-        for card in jay.getFlipped():
+    if len(player1.getFlipped()) > 0:
+        for card in player1.getFlipped():
 
             pygame.draw.rect(screen, card.colour, (flipped_rect_x, flipped_rect_y, rect_width, rect_height))
 
@@ -431,7 +225,7 @@ while running:
             label_rect = label.get_rect(centerx=flipped_rect_x + rect_width // 2, centery=flipped_rect_y + rect_height // 2)
             screen.blit(label, label_rect)
 
-    for card in jay.getFront3():
+    for card in player1.getFront3():
 
         pygame.draw.rect(screen, card.colour, (front3_rect_x, flipped_rect_y, rect_width, rect_height))
 
@@ -441,13 +235,13 @@ while running:
         screen.blit(label, label_rect)
         front3_rect_x += rect_width+20
 
-    for card in jay.getHand():
-        if len(jay.getHand())>0:
+    for card in player1.getHand():
+        if len(player1.getHand())>0:
 
             pygame.draw.rect(screen, 'grey', (hand_rect_x, flipped_rect_y, rect_width, rect_height))
 
     count = 0
-    for pile in piles:
+    for pile in player1.getPiles():
         if len(pile)> 0:
              
             pygame.draw.rect(screen, pile[len(pile)-1].colour, (pile_rect_x, pile_rect_y, rect_width, rect_height))
@@ -468,10 +262,7 @@ while running:
         else:
             pile_rect_x += rect_width+20
 
-        
 
-        
-        
         
     front3_rect_x = 140
     blitz_rect_x = 10
